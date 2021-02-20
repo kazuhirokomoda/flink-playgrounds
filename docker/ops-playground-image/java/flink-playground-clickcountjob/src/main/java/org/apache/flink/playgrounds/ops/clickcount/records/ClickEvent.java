@@ -41,6 +41,13 @@ public class ClickEvent {
 		this.page = page;
 	}
 
+	public String buildFileSystemString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append(timestamp).append("\t");
+		sb.append(page);
+		return sb.toString();
+	}
+
 	public Date getTimestamp() {
 		return timestamp;
 	}

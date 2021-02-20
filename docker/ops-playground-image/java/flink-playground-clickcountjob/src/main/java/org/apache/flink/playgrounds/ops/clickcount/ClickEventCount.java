@@ -25,6 +25,7 @@ import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatisticsSerializationSchema;
+import org.apache.flink.playgrounds.ops.clickcount.sinks.FileSink;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -98,6 +99,10 @@ public class ClickEventCount {
 				.name("Backpressure");
 		}
 
+		String fileSystemOutputPath = params.get("fs-output-path", "/tmp/filesink-directory");
+		String fileSystemBucketingPeriod = params.get("fs-bucketing-period", "yyyy-MM-dd--HH-mm");
+		saveClickToFileSystem(clicks, fileSystemOutputPath, fileSystemBucketingPeriod);
+
 		DataStream<ClickEventStatistics> statistics = clicks
 			.keyBy(ClickEvent::getPage)
 			.timeWindow(WINDOW_SIZE)
@@ -114,6 +119,13 @@ public class ClickEventCount {
 			.name("ClickEventStatistics Sink");
 
 		env.execute("Click Event Count");
+	}
+
+	private static void saveClickToFileSystem(DataStream<ClickEvent> clicks, String outputPath, String bucketingPeriod) {
+		clicks
+			.map(ClickEvent::buildFileSystemString)
+			.addSink(FileSink.buildSink(outputPath, bucketingPeriod))
+			.name("ClickEvent Sink File System");
 	}
 
 	private static void configureEnvironment(
