@@ -54,6 +54,7 @@ services:
       - ./conf:/opt/flink/conf
       - /tmp/flink-checkpoints-directory:/tmp/flink-checkpoints-directory
       - /tmp/flink-savepoints-directory:/tmp/flink-savepoints-directory
+      - /tmp/filesink-directory:/tmp/filesink-directory
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
   zookeeper:
